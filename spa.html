@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>SPA Sterter</title>
-    </head>
 
-    <!-- таблицы стилей -->
-    <link rel="stylesheet" href="css/spa.css" type="text/css" /> 
-    <link rel="stylesheet" href="css/spa.shell.css" type="text/css"/>
+<head>
+    <title>SPA Sterter</title>
+</head>
 
-    <!-- библиотеки javascript -->
-    <script src="js/jq/jquery-3.6.3.js"></script>
-    <script src="js/jq/jquery.uriAnchor.js"></script>
+<!-- таблицы стилей -->
+<link rel="stylesheet" href="css/spa.css" type="text/css" />
+<link rel="stylesheet" href="css/spa.shell.css" type="text/css" />
 
-    <!-- javascript SPA -->
-    <script src="js/spa.js"></script>
-    <script src="js/spa.shell.js"></script>
-    <script>
-        $(function() { spa.initModule( $('#spa') ); });
-    </script>
-    <body>
-        <div id="spa"></div>
-    </body>
+<!-- библиотеки javascript -->
+<script src="js/jq/jquery-3.6.3.js"></script>
+<script src="js/jq/jquery.uriAnchor.js"></script>
+
+<!-- javascript SPA -->
+<script src="js/spa.js"></script>
+<script src="js/spa.shell.js"></script>
+<script>
+    //$(function () { spa.initModule($('#spa')); });
+    $(function () { spa.initModule( $('#spa') ); });
+</script>
+
+<body>
+    <div id="spa"></div>
+</body>
+
 </html>

@@ -59,7 +59,7 @@ strong {
 /* #endregion */
 
 /* #region Служебные селекторы */
-.spa-x-select{}
+.spa-x-select {}
 .spa-x-clearfloat {
     height: 0 !important;
     float: none !important;
