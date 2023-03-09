@@ -29,11 +29,16 @@ spa.shell = (function () {
             chat_extend_time: 1000,
             chat_retract_time: 300,
             chat_extend_height: 450,
-            chat_retract_height: 15
+            chat_retract_height: 15,
+            chat_extended_title: "Щелкните, что свернуть",
+            chat_retracted_title: "Щелкните, чтобы раскрыть"
         },
-        stateMap = {$container: null},
+        stateMap = {
+            $container: null,
+            is_chat_retracted: true
+        },
         jQueryMap = {},
-        setJqueryMap,  toggleChat, initModule;
+        setJqueryMap, toggleChat, onclickChat, initModule;
     //#endregion
 
     /*#region СЛУЖЕБНЫЕ МЕТОДЫ */
@@ -45,7 +50,7 @@ spa.shell = (function () {
         var $container = stateMap.$container;
         jQueryMap = {
             $container: $container,
-            $chat : $container.find('.spa-shell-chat')
+            $chat: $container.find('.spa-shell-chat')
         };
     };
     // END: метода DOM /setJqueryMap/
@@ -59,16 +64,19 @@ spa.shell = (function () {
      * Параметры:
      *  chat_extend_time, chat_retract_time
      *  chat_extend_height, chat_retract_height
+     * Состояние:
+     *  * true - окно свернуто
+     *  * false - окно раскрыто
      * Return: boolean
      *  * true - анимация окна чата начата
      *  * false - анимация окна чата не начата
      */
-    toggleChat = function (do_extend, callback){
+    toggleChat = function (do_extend, callback) {
         var
             px_chat_ht = jQueryMap.$chat.height(),
             is_open = px_chat_ht === configMap.chat_extend_height,
             is_closed = px_chat_ht === configMap.chat_retract_height,
-            is_sliding = ! is_open && ! is_closed;
+            is_sliding = !is_open && !is_closed;
 
         // для исключения гонки
         if (is_sliding) {
@@ -76,12 +84,18 @@ spa.shell = (function () {
         }
 
         // начало раскрытия чата
-        if (do_extend){
+        if (do_extend) {
             jQueryMap.$chat.animate(
-                {height : configMap.chat_extend_height},
+                {height: configMap.chat_extend_height},
                 configMap.chat_extend_time,
-                function (){
-                    if (callback) {callback(jQueryMap.$chat);}
+                function () {
+                    jQueryMap.$chat.attr(
+                        'title', configMap.chat_extended_title
+                    );
+                    stateMap.is_chat_retracted = false;
+                    if (callback) {
+                        callback(jQueryMap.$chat);
+                    }
                 }
             );
             return true;
@@ -90,10 +104,16 @@ spa.shell = (function () {
 
         // начало сворачивания чата
         jQueryMap.$chat.animate(
-            {height : configMap.chat_retract_height},
+            {height: configMap.chat_retract_height},
             configMap.chat_retract_time,
-            function (){
-                if (callback) { callback(jQueryMap.$chat);}
+            function () {
+                jQueryMap.$chat.attr(
+                    'title', configMap.chat_retracted_title
+                );
+                stateMap.is_chat_retracted = true;
+                if (callback) {
+                    callback(jQueryMap.$chat);
+                }
             }
         );
         return true;
@@ -102,6 +122,10 @@ spa.shell = (function () {
     /*#endregion*/
 
     /*#region ОБРАБОТЧИКИ СОБЫТИЙ*/
+    onclickChat = function (event){
+        toggleChat(stateMap.is_chat_retracted);
+        return false;
+    }
     /*#endregion*/
 
     /*#region ОТКРЫТЫЕ МЕТОДЫ*/
@@ -112,9 +136,19 @@ spa.shell = (function () {
         $container.html(configMap.main_html);
         setJqueryMap();
 
+        // инициализировать окно чата и привязать обработчик щелчка
+        stateMap.is_chat_retracted = true;
+        jQueryMap.$chat
+            .attr('title', configMap.chat_retracted_title)
+            .click(onclickChat);
+
         // тестировать переключение
-        setTimeout(function () {toggleChat(true);}, 3000);
-        setTimeout(function () {toggleChat(false);}, 8000);
+        setTimeout(function () {
+            toggleChat(true);
+        }, 3000);
+        setTimeout(function () {
+            toggleChat(false);
+        }, 8000);
 
     };
     // END: Открытый метод initModule
