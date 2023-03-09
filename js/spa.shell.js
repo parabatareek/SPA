@@ -13,6 +13,9 @@ spa.shell = (function () {
     //#region ПЕРЕМЕННЫЕ В ОБЛАСТИ ВИДИМОСТИ МОДУЛЯ
     var
         configMap = {
+            anchor_schema_map : {
+                chat: {open : true, closed : true}
+            },
             main_html: String()
                 + '<div class="spa-shell-head">'
                 + '<div class="spa-shell-head-logo"></div>'
@@ -35,16 +38,72 @@ spa.shell = (function () {
         },
         stateMap = {
             $container: null,
+            anchor_map : {},
             is_chat_retracted: true
         },
         jQueryMap = {},
-        setJqueryMap, toggleChat, onclickChat, initModule;
+        copyAnchorMap, setJqueryMap, toggleChat,
+        changeAnchorPart, onHashchange,
+        onclickChat, initModule;
     //#endregion
 
     /*#region СЛУЖЕБНЫЕ МЕТОДЫ */
+    copyAnchorMap = function (){
+        return $.extend(true, {}, stateMap.anchor_map);
+    }
     /*#endregion*/
 
     /*#region МЕТОДЫ DOM*/
+    // START: метода DOM /changeAnchorPart/
+    /**
+     * Назаначение: изменяет якорь в URI-адресе
+     * Аргументы:
+     *  * arg_map - хэш, описывающий какую чать якоря необходмо изменить
+     * Return: boolean
+     *  * true - якорь в URI обновлен
+     *  * false - не удалось обновить якорь в URI
+     * Действие:
+     *  - текущая часть якоря сохранена в stateMap.anchor_map.
+     *  - обсуждение кодировки см. в документации по uriArchor.
+     *  Этот метод:
+     *  - создает копию хеша, вызывая copyAnchorMap().
+     *  - модифицирует пары ключ-значение с помощью arg-map.
+     *  - управляет различием между зависимыми и независимыми значениями в кодировке
+     *  - пытается изменить URI, используя uriAnchor.
+     *  - Возвращает true в случае успеха и false - в случае ошибки
+     */
+    changeAnchorPart = function (arg_map){
+        var
+            anchor_map_revise = copyAnchorMap(),
+            bool_return = true,
+            key_name, key_name_dep;
+
+        // начало объединения изменений в хэше якорей
+        KEYVAL:
+        for (key_name in arg_map){
+            if (arg_map.hasOwnProperty(key_name)){
+                // пропустить зависимые ключи
+                if (key_name.indexOf('_') === 0){continue KEYVAL};
+
+                // обновить значение независимого ключа
+                anchor_map_revise[key_name] = arg_map[key_name];
+
+                // обновить соответствующий зависимый ключ
+                key_name_dep = '_' + key_name;
+
+                if (arg_map[key_name_dep]){
+                    anchor_map_revise[key_name_dep] = arg_map[key_name_dep];
+                }
+                else{
+                    delete anchor_map_revise[key_name_dep];
+                    delete anchor_map_revise['_s' + key_name_dep];
+                }
+            }
+        }
+        // конец объединения изменений в хэше якорей
+    }
+    // END: метода DOM /changeAnchorPart/
+
     // START: метода DOM /setJqueryMap/
     setJqueryMap = function () {
         var $container = stateMap.$container;
@@ -123,7 +182,11 @@ spa.shell = (function () {
 
     /*#region ОБРАБОТЧИКИ СОБЫТИЙ*/
     onclickChat = function (event){
-        toggleChat(stateMap.is_chat_retracted);
+        if (toggleChat(stateMap.is_chat_retracted)){
+            $.uriAnchor.setAnchor({
+                chat : (stateMap.is_chat_retracted ? 'open' : 'closed')
+            });
+        }
         return false;
     }
     /*#endregion*/
@@ -143,12 +206,12 @@ spa.shell = (function () {
             .click(onclickChat);
 
         // тестировать переключение
-        setTimeout(function () {
-            toggleChat(true);
-        }, 3000);
-        setTimeout(function () {
-            toggleChat(false);
-        }, 8000);
+        // setTimeout(function () {
+        //     toggleChat(true);
+        // }, 3000);
+        // setTimeout(function () {
+        //     toggleChat(false);
+        // }, 8000);
 
     };
     // END: Открытый метод initModule
