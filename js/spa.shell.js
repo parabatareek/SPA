@@ -101,6 +101,19 @@ spa.shell = (function () {
             }
         }
         // конец объединения изменений в хэше якорей
+
+        // начало попытки обновления URI,
+        // в случае ошибки восстановить исходное состояние
+        try {
+            $.uriAnchor.setAnchor(anchor_map_revise);
+        }
+        catch (error){
+            // восстановить исходное состояние URI
+            $.uriAnchor.setAnchor(stateMap.anchor_map, null, true);
+            bool_return = false;
+        }
+        // конец попытки обновления URI
+        return bool_return;
     }
     // END: метода DOM /changeAnchorPart/
 
